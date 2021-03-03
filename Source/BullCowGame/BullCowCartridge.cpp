@@ -5,58 +5,71 @@ void UBullCowCartridge::BeginPlay() // When the game starts
 {
     Super::BeginPlay();
 
-   
-
-    PrintLine(TEXT("Welcome to the bull and cow game"));
-    PrintLine(TEXT("Guess a 4 letter word"));
-    
-
     InitGameSettings();
 
+    PrintLine(TEXT("The hidden word is: %s"), *HiddenWord); //debug line
 
-    /**
-    * game loop
-    * 
-    * start game 
-    * set hidden word 
-    * set number of lives
-    * prompt for guess 
-    * if correct player wins 
-    * if not lives--prompt for guess 
-    * if lives == 0 player loses
-    * 
-    * */
 }
 
 void UBullCowCartridge::OnInput(const FString& Input) // When the player hits enter
 {
-    ClearScreen();
    
-   
-
-    if (HiddenWord == Input) {
-        PrintLine(TEXT("The word is correct!!"));
-    }
-    else {
-        if (Input.Len() == HiddenWord.Len()) {
-            PrintLine(TEXT("The word is wrong"));
-        }
-        else {
-            PrintLine(TEXT("The length of guess is wrong"));
-        }
-        
-    }
-    //validate input
-    //check isIsogram 
-    //isNumberOfCharactere correct
-    //set lives--;
-    //if lives == 0 player loses
-
-
+    ProcessGuess(Input, Lives);
 
 }
 void UBullCowCartridge::InitGameSettings()
 {
-    HiddenWord = TEXT("high");
-    Lives = 4;
+    HiddenWord = TEXT("hi");
+    Lives = HiddenWord.Len();
+    bIsGameOver = false;
+
+    //Welcome message
+    PrintLine(TEXT("Welcome to the bull and cow game"));
+    PrintLine(FString::Printf(TEXT("Guess a %i letter word"), HiddenWord.Len()));
+    PrintLine(FString::Printf(TEXT("Number of lives: %i"), Lives));
+    PrintLine(TEXT("Please guess the word.."));
 }
+void UBullCowCartridge::EndGame()
+{
+    bIsGameOver = true;
+    PrintLine(TEXT("Press Enter to continue..."));
+}
+void UBullCowCartridge::ProcessGuess(FString guess,int32 counter)
+{
+    if (bIsGameOver)
+    {
+        ClearScreen();
+        InitGameSettings();
+        return;
+    }
+    if (HiddenWord == guess) 
+    {
+        PrintLine(TEXT("The word is correct!!"));
+        EndGame();
+        return;
+    }
+    if (guess.Len() != HiddenWord.Len())
+    {
+        PrintLine(FString::Printf(TEXT("The length of the word is: %i try again"), HiddenWord.Len()));
+        return;
+    }
+    //if(!isIsogram)
+    //{
+    //  PrintLine(Text("The word /"%s/" is not an isogram, try again"), HiddenWord)); 
+    //}
+    if(Lives<1)
+    {
+        PrintLine(TEXT("You have run out of lives"));
+        EndGame();
+        return;
+    }
+    PrintLine(TEXT("The word is wrong"));
+    PrintLine(TEXT("You have %i lives remaining"), --Lives);
+}
+// bool UBullCowCartridge::IsIsogram(FString word)
+//{
+// for length of word 
+// loop through chars 
+// if word has more then 1 char the same 
+// return false 
+//}
