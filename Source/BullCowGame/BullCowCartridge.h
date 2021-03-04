@@ -16,7 +16,8 @@ public:
 	virtual void OnInput(const FString& Input) override;
 	void InitGameSettings();
 	void EndGame();
-	void ProcessGuess(FString guess, int32 counter);
+	void ProcessGuess(FString guess);
+	bool IsIsogram(FString word) const;
 
 	// Your declarations go below!
 
@@ -24,4 +25,5 @@ private:
 	FString HiddenWord;
 	int32 Lives;
 	bool bIsGameOver;
+	TArray<FString> Words;
 };

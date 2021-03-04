@@ -1,28 +1,27 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BullCowCartridge.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
     Super::BeginPlay();
-
+    //loads word file 
+    const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
+    FFileHelper::LoadFileToStringArray(Words, *WordListPath);
     InitGameSettings();
-
     PrintLine(TEXT("The hidden word is: %s"), *HiddenWord); //debug line
 
 }
-
 void UBullCowCartridge::OnInput(const FString& Input) // When the player hits enter
 {
-   
-    ProcessGuess(Input, Lives);
-
+    ProcessGuess(Input);
 }
 void UBullCowCartridge::InitGameSettings()
 {
-    HiddenWord = TEXT("hi");
+    HiddenWord = TEXT("highs");
     Lives = HiddenWord.Len();
     bIsGameOver = false;
-
     //Welcome message
     PrintLine(TEXT("Welcome to the bull and cow game"));
     PrintLine(FString::Printf(TEXT("Guess a %i letter word"), HiddenWord.Len()));
@@ -34,7 +33,7 @@ void UBullCowCartridge::EndGame()
     bIsGameOver = true;
     PrintLine(TEXT("Press Enter to continue..."));
 }
-void UBullCowCartridge::ProcessGuess(FString guess,int32 counter)
+void UBullCowCartridge::ProcessGuess(FString guess)
 {
     if (bIsGameOver)
     {
@@ -53,10 +52,11 @@ void UBullCowCartridge::ProcessGuess(FString guess,int32 counter)
         PrintLine(FString::Printf(TEXT("The length of the word is: %i try again"), HiddenWord.Len()));
         return;
     }
-    //if(!isIsogram)
-    //{
-    //  PrintLine(Text("The word /"%s/" is not an isogram, try again"), HiddenWord)); 
-    //}
+    if(!IsIsogram(guess))
+    {
+      PrintLine(TEXT("The word %s has repeating letters. \nTry again."), *guess); 
+      return;
+    }
     if(Lives<1)
     {
         PrintLine(TEXT("You have run out of lives"));
@@ -66,10 +66,19 @@ void UBullCowCartridge::ProcessGuess(FString guess,int32 counter)
     PrintLine(TEXT("The word is wrong"));
     PrintLine(TEXT("You have %i lives remaining"), --Lives);
 }
-// bool UBullCowCartridge::IsIsogram(FString word)
-//{
-// for length of word 
-// loop through chars 
-// if word has more then 1 char the same 
-// return false 
-//}
+ bool UBullCowCartridge::IsIsogram(FString word) const
+{
+     for (int32 Index = 0; Index < word.Len(); Index++)
+     {
+         for (int32 Counter = Index + 1; Counter < word.Len(); Counter++)
+         {
+             if (word[Index] == word[Counter]) {
+                 return false;
+             }
+         }
+     }
+     return true;
+ /*for length of word 
+ loop through chars 
+ if word has more then 1 char the same */  
+}
