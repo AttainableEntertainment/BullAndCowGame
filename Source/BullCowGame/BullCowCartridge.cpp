@@ -6,22 +6,34 @@
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
     Super::BeginPlay();
+
     //loads word file 
     const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
     FFileHelper::LoadFileToStringArray(Words, *WordListPath);
+
+    //runs function to check if words are valid
+    TArray<FString> ValidWords = GetValidWords(Words);
+
+    //initiate game settings
     InitGameSettings();
-    PrintLine(TEXT("The hidden word is: %s"), *HiddenWord); //debug line
+
+    //debug lines
+    PrintLine(TEXT("The hidden word is: %s"), *HiddenWord); 
+    PrintLine(TEXT("the number of valid words is: %i"), ValidWords.Num());
+    PrintLine(TEXT("Random number 1-10: %i"), FMath::RandRange(1, 10));
 
 }
-void UBullCowCartridge::OnInput(const FString& Input) // When the player hits enter
+void UBullCowCartridge::OnInput(const FString& PlayerInput) // When the player hits enter
 {
-    ProcessGuess(Input);
+    ProcessGuess(PlayerInput);
 }
 void UBullCowCartridge::InitGameSettings()
 {
+   
     HiddenWord = TEXT("highs");
     Lives = HiddenWord.Len();
     bIsGameOver = false;
+
     //Welcome message
     PrintLine(TEXT("Welcome to the bull and cow game"));
     PrintLine(FString::Printf(TEXT("Guess a %i letter word"), HiddenWord.Len()));
@@ -33,7 +45,7 @@ void UBullCowCartridge::EndGame()
     bIsGameOver = true;
     PrintLine(TEXT("Press Enter to continue..."));
 }
-void UBullCowCartridge::ProcessGuess(FString guess)
+void UBullCowCartridge::ProcessGuess(const FString& Guess)
 {
     if (bIsGameOver)
     {
@@ -41,20 +53,20 @@ void UBullCowCartridge::ProcessGuess(FString guess)
         InitGameSettings();
         return;
     }
-    if (HiddenWord == guess) 
+    if (HiddenWord == Guess) 
     {
         PrintLine(TEXT("The word is correct!!"));
         EndGame();
         return;
     }
-    if (guess.Len() != HiddenWord.Len())
+    if (Guess.Len() != HiddenWord.Len())
     {
         PrintLine(FString::Printf(TEXT("The length of the word is: %i try again"), HiddenWord.Len()));
         return;
     }
-    if(!IsIsogram(guess))
+    if(!IsIsogram(Guess))
     {
-      PrintLine(TEXT("The word %s has repeating letters. \nTry again."), *guess); 
+      PrintLine(TEXT("The word %s has repeating letters. \nTry again."), *Guess); 
       return;
     }
     if(Lives<1)
@@ -66,7 +78,7 @@ void UBullCowCartridge::ProcessGuess(FString guess)
     PrintLine(TEXT("The word is wrong"));
     PrintLine(TEXT("You have %i lives remaining"), --Lives);
 }
- bool UBullCowCartridge::IsIsogram(FString word) const
+ bool UBullCowCartridge::IsIsogram(const FString& word) const
 {
      for (int32 Index = 0; Index < word.Len(); Index++)
      {
@@ -78,7 +90,16 @@ void UBullCowCartridge::ProcessGuess(FString guess)
          }
      }
      return true;
- /*for length of word 
- loop through chars 
- if word has more then 1 char the same */  
 }
+ TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& words) const
+ {
+     TArray<FString> validWords;
+
+     for (FString index:words) {
+         if (index.Len() >= 4 && index.Len() <= 8 && IsIsogram(index))
+         {
+             validWords.Emplace(index);
+         }
+     }
+     return validWords;
+ }
